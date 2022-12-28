@@ -3,6 +3,10 @@ import { User, UserData, UserId } from '../interfaces';
 
 const users = new Map<UserId, User>();
 
+export function getAllUsers() {
+    return Array.from(users.values());
+}
+
 export function getUserById(id: string) {
     return users.get(id);
 }
@@ -42,9 +46,11 @@ export function getAutoSuggestUsers(loginSubstring: string, limit?: number) {
             user.login.toLowerCase().includes(lowerCaseLoginSubstring)
         )
         .sort((a, b) => {
-            if (a.login.toLowerCase() < b.login.toLowerCase()) {
+            const loginA = a.login.toLowerCase();
+            const loginB = b.login.toLowerCase();
+            if (loginA < loginB) {
                 return -1;
-            } else if (a.login.toLowerCase() > b.login.toLowerCase()) {
+            } else if (loginA > loginB) {
                 return 1;
             }
 

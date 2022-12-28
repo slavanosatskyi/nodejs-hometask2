@@ -1,47 +1,99 @@
-import express, { Request } from 'express';
-import { createUser, deleteUserById, getUserById, updateUserById } from '../data';
+import express, { NextFunction, Request, Response } from 'express';
+import Joi from 'joi';
+import {
+    createUser,
+    deleteUserById,
+    getAllUsers,
+    getUserById,
+    updateUserById
+} from '../data';
 import { User, UserData } from '../interfaces';
+import { userSchema } from '../schemas/userSchema';
 import { ENDPOINTS } from './endpoints';
 
 type UserParams = {
   id: string;
 };
 
-type UserReqBody = {
-    userData: UserData
-};
+const noUserFoundMessage = (id: string) => `No user found with id=${id}`;
+const notUniqueLoginMessage = (login: string) => `Such user already exists ${login}`;
+
+function errorResponse(schemaErrors: Joi.ValidationErrorItem[]) {
+    const errors = schemaErrors.map((error) => {
+        const { path, message } = error;
+        return { path, message };
+    });
+
+    return {
+        status: 'failed',
+        errors
+    };
+}
+
+function validateSchema(schema: Joi.ObjectSchema<UserData>) {
+    return (req: Request, res: Response, next: NextFunction) => {
+        const { error } = schema.validate(req.body, {
+            abortEarly: false,
+            allowUnknown: false
+        });
+
+        if (error?.isJoi) {
+            res.status(400).json(errorResponse(error.details));
+        } else {
+            next();
+        }
+    };
+}
+
+function checkUniqueLogin(login: string) {
+    return !getAllUsers().some((user) => user.login === login);
+}
 
 const userRoute = express.Router();
-
-userRoute.post(ENDPOINTS.USER, (req: Request<null, User, UserReqBody>, res) => {
-    const newUser = createUser(req.body.userData);
-    res.json(newUser);
-});
 
 userRoute.param('id', (req, res, next, id) => {
     const user = getUserById(id);
     if (!user) {
-        res.status(404).json({ message: `No user found with id=${id}` });
+        res.status(404).json({ message: noUserFoundMessage(id) });
     } else {
         next();
     }
 });
 
+userRoute.post(
+    ENDPOINTS.USER,
+    validateSchema(userSchema),
+    (req: Request<unknown, User, UserData>, res: Response) => {
+        if (!checkUniqueLogin(req.body.login)) {
+            res.status(400).json({ message: notUniqueLoginMessage(req.body.login) });
+        } else {
+            res.json(createUser(req.body));
+        }
+    }
+);
+
 userRoute
     .route(`${ENDPOINTS.USER}/:id`)
     .get((req, res) => {
-        const user = getUserById(req.params.id);
-        res.json(user);
+        res.json(getUserById(req.params.id));
     })
-    .put((req: Request<UserParams, User, UserReqBody>, res) => {
-        const updatedUser = updateUserById(req.params.id, req.body.userData);
-        res.json(updatedUser);
-    })
+    .put(
+        validateSchema(userSchema),
+        (req: Request<UserParams, User, UserData>, res) => {
+            const currentUser = getUserById(req.params.id);
+            if (
+                currentUser?.login !== req.body.login && !checkUniqueLogin(req.body.login)
+            ) {
+                res
+                    .status(400)
+                    .json({ message: notUniqueLoginMessage(req.body.login) });
+            } else {
+                res.json(updateUserById(req.params.id, req.body));
+            }
+        }
+    )
     .delete((req, res) => {
-        const deletedUser = deleteUserById(req.params.id);
-        res.json(deletedUser);
+        res.json(deleteUserById(req.params.id));
     });
 
-export {
-    userRoute
-};
+export { userRoute };
