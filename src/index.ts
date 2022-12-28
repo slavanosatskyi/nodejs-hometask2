@@ -1,10 +1,14 @@
-console.log('Hello world');
+import express from 'express';
+import { userRoute, usersRoute } from './routes';
 
-function myTest() {
-    const a = 1;
-    const b = 2;
+const PORT = 3000;
 
-    return a + b;
-}
+const app = express();
 
-console.log('Result', myTest());
+app.use(express.json());
+app.use('/', userRoute);
+app.use('/', usersRoute);
+
+app.listen(PORT, () => {
+    console.log(`App listening on port ${PORT}`);
+});

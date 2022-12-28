@@ -172,7 +172,6 @@
         "no-undef": 2,
         "no-unused-vars": 2,
         // Node.js
-        "callback-return": 2,
         "no-mixed-requires": 2,
         "no-path-concat": 2,
         "no-sync": 2,
