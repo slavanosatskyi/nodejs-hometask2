@@ -84,8 +84,7 @@ userRoute
             if (
                 currentUser?.login !== req.body.login && !checkUniqueLogin(req.body.login)
             ) {
-                res
-                    .status(400)
+                res.status(400)
                     .json({ message: notUniqueLoginMessage(req.body.login) });
             } else {
                 res.json(updateUserById(req.params.id, req.body));
