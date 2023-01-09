@@ -15,7 +15,8 @@ export function createUser(userData: UserData) {
     const id = uuid();
     const newUser = {
         ...userData,
-        id
+        id,
+        isDeleted: false
     };
     users.set(id, newUser);
     return newUser;
@@ -38,16 +39,16 @@ export function deleteUserById(id: string) {
     return deletedUser;
 }
 
-export function getAutoSuggestUsers(loginSubstring: string, limit?: number) {
+export function getAutoSuggestUsers(loginSubstring: string, limit: number | undefined) {
     const lowerCaseLoginSubstring = loginSubstring.toLowerCase();
 
     return Array.from(users.values())
         .filter((user) =>
             user.login.toLowerCase().includes(lowerCaseLoginSubstring)
         )
-        .sort((a, b) => {
-            const loginA = a.login.toLowerCase();
-            const loginB = b.login.toLowerCase();
+        .sort((currentUser, nextUser) => {
+            const loginA = currentUser.login.toLowerCase();
+            const loginB = nextUser.login.toLowerCase();
             if (loginA < loginB) {
                 return -1;
             } else if (loginA > loginB) {

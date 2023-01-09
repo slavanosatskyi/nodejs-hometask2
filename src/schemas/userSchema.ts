@@ -8,6 +8,5 @@ export const userSchema = Joi.object<UserData>({
         .required().messages({
             'string.pattern.base': 'Password has to have letters and numbers'
         }),
-    age: Joi.number().integer().min(4).max(130).required(),
-    isDeleted: Joi.boolean().required()
+    age: Joi.number().integer().min(4).max(130).required()
 });
