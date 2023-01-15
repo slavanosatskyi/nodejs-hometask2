@@ -1,7 +1,7 @@
 import Joi from 'joi';
-import { UserData } from '../interfaces';
+import { UserDTO } from '../interfaces';
 
-export const userSchema = Joi.object<UserData>({
+export const userSchema = Joi.object<UserDTO>({
     login: Joi.string().required(),
     password: Joi.string()
         .pattern(/^(?=.*?\d)(?=.*?[a-zA-Z])[a-zA-Z\d]+$/)// contains letters and numbers

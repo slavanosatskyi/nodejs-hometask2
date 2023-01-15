@@ -8,4 +8,13 @@ export type User = {
   isDeleted: boolean;
 };
 
-export type UserData = Omit<User, 'id'>;
+export type UserDTO = Omit<User, 'id' | 'isDeleted'>;
+
+export type UserParams = {
+  id: string;
+};
+
+export type FilterQueryParams = {
+  loginSubstring?: string;
+  limit?: string;
+};
