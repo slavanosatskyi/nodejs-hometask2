@@ -15,7 +15,8 @@ export default class UserService {
     }
 
     public async createUser(userData: UserDTO) {
-        if (!this.isLoginUnique(userData.login)) {
+        const isLoginUnique = await this.isLoginUnique(userData.login);
+        if (!isLoginUnique) {
             throw notUniqueLoginMessage(userData.login);
         }
 
@@ -31,10 +32,9 @@ export default class UserService {
 
     async updateUserById(id: string, userData: UserDTO) {
         const currentUser = await this.getUserById(id);
-        if (
-            currentUser.login !== userData.login &&
-      !this.isLoginUnique(userData.login)
-        ) {
+        const isLoginUnique = await this.isLoginUnique(userData.login);
+
+        if (currentUser.login !== userData.login && !isLoginUnique) {
             throw notUniqueLoginMessage(userData.login);
         }
 
@@ -57,6 +57,7 @@ export default class UserService {
     async getAutoSuggestUsers(loginSubstring: string, limit?: number) {
         const lowerCaseLoginSubstring = loginSubstring.toLowerCase();
         const users = await this.userDal.getAll();
+
         return users
             .filter((user) =>
                 user.login.toLowerCase().includes(lowerCaseLoginSubstring)
@@ -73,7 +74,7 @@ export default class UserService {
                 return 0;
             })
             .slice(0, limit)
-            .map(user => user.toJSON());
+            .map((user) => user.toJSON());
     }
 
     private async isLoginUnique(login: string) {

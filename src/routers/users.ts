@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express';
+import { validate as uuidValidate } from 'uuid';
 import { User, UserDTO, FilterQueryParams, UserParams } from '../interfaces';
 import { userSchema } from '../schemas/userSchema';
 import { ENDPOINTS } from './endpoints';
@@ -13,22 +14,21 @@ const usersService = new UserService(new UserDal());
 const usersRoute = express.Router();
 
 usersRoute.param('id', (req, res, next, id) => {
-    try {
-        usersService.getUserById(id);
+    if (!uuidValidate(id)) {
+        res.status(404).json('not valid uuid');
+    } else {
         next();
-    } catch (err) {
-        res.status(404).json(err);
     }
 });
 
 usersRoute.get(
     ENDPOINTS.USERS,
     validateUsersSearchParams,
-    (req: Request<object, object, object, FilterQueryParams>, res: Response) => {
+    async (req: Request<object, object, object, FilterQueryParams>, res: Response) => {
         const { loginSubstring, limit } = req.query;
-        const result = usersService.getAutoSuggestUsers(
+        const result = await usersService.getAutoSuggestUsers(
             loginSubstring ?? '',
-            parseInt(limit ?? '', 10)
+            limit ? parseInt(limit, 10) : undefined
         );
         res.json(result);
     }
@@ -50,8 +50,12 @@ usersRoute.post(
 usersRoute
     .route(`${ENDPOINTS.USERS}/:id`)
     .get(async (req, res) => {
-        const user = await usersService.getUserById(req.params.id);
-        res.json(user);
+        try {
+            const user = await usersService.getUserById(req.params.id);
+            res.json(user);
+        } catch (err) {
+            res.status(404).json(err);
+        }
     })
     .put(
         validateSchema(userSchema),
