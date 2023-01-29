@@ -1,10 +1,9 @@
 import express, { Request, Response } from 'express';
 import { validate as uuidValidate } from 'uuid';
-import { User, UserDTO, FilterQueryParams, UserParams } from '../interfaces';
-import { userSchema } from '../schemas/userSchema';
+import { User, UserDTO, FilterQueryParams, UserParams } from '../types/user';
 import { ENDPOINTS } from './endpoints';
 import {
-    validateSchema,
+    validateUserSchema,
     validateUsersSearchParams
 } from '../validationMiddleware';
 import { UserService } from '../services';
@@ -36,7 +35,7 @@ usersRoute.get(
 
 usersRoute.post(
     ENDPOINTS.USERS,
-    validateSchema(userSchema),
+    validateUserSchema,
     async (req: Request<unknown, User, UserDTO>, res: Response) => {
         try {
             const newUser = await usersService.createUser(req.body);
@@ -58,7 +57,7 @@ usersRoute
         }
     })
     .put(
-        validateSchema(userSchema),
+        validateUserSchema,
         async (req: Request<UserParams, User, UserDTO>, res) => {
             try {
                 const updatedUser = await usersService.updateUserById(

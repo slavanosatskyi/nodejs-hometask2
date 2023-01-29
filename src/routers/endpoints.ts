@@ -1,3 +1,4 @@
 export const ENDPOINTS = {
-    USERS: '/users'
+    USERS: '/users',
+    GROUPS: '/groups'
 };

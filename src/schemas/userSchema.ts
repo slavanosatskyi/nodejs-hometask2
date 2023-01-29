@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { UserDTO } from '../interfaces';
+import { UserDTO } from '../types/user';
 
 export const userSchema = Joi.object<UserDTO>({
     login: Joi.string().required(),

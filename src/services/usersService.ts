@@ -1,8 +1,8 @@
 import { v4 as uuid } from 'uuid';
 import { UserDal } from '../data-access';
-import { User, UserDTO } from '../interfaces';
+import { User, UserDTO } from '../types/user';
 
-export default class UserService {
+export class UserService {
     private userDal;
 
     constructor(userDal: UserDal) {

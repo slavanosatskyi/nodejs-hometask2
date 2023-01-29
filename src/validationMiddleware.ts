@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import Joi from 'joi';
-import { FilterQueryParams, UserDTO } from './interfaces';
+import { groupSchema, userSchema } from './schemas';
+import { FilterQueryParams } from './types/user';
 
 function errorResponse(schemaErrors: Joi.ValidationErrorItem[]) {
     const errors = schemaErrors.map((error) => {
@@ -14,7 +15,7 @@ function errorResponse(schemaErrors: Joi.ValidationErrorItem[]) {
     };
 }
 
-export function validateSchema(schema: Joi.ObjectSchema<UserDTO>) {
+function schemaValidationFactory<T>(schema: Joi.ObjectSchema<T>) {
     return (req: Request, res: Response, next: NextFunction) => {
         const { error } = schema.validate(req.body, {
             abortEarly: false,
@@ -28,6 +29,9 @@ export function validateSchema(schema: Joi.ObjectSchema<UserDTO>) {
         }
     };
 }
+
+export const validateUserSchema = schemaValidationFactory(userSchema);
+export const validateGroupSchema = schemaValidationFactory(groupSchema);
 
 export function validateUsersSearchParams(
     req: Request,

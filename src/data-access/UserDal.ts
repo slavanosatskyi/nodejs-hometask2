@@ -1,5 +1,6 @@
-import { User } from '../interfaces';
+import { User } from '../types/user';
 import { UserModel } from '../models';
+import { Transaction } from 'sequelize';
 
 export class UserDal {
     async create(user: User) {
@@ -11,8 +12,8 @@ export class UserDal {
         return user.update(inputUser);
     }
 
-    async getById(id: string) {
-        const user = await UserModel.findByPk(id);
+    async getById(id: string, transaction?: Transaction) {
+        const user = await UserModel.findByPk(id, { transaction });
         if (!user) {
             throw `No user found with id=${id}`;
         }
