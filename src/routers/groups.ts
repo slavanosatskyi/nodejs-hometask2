@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import { validate as uuidValidate } from 'uuid';
 import { GroupDal } from '../data-access';
+import { buildErrorMessage, logger } from '../logger';
 import { GroupService } from '../services';
 import { Group, GroupDTO, GroupParams } from '../types/group';
 import { validateGroupSchema } from '../validationMiddleware';
@@ -11,6 +12,11 @@ const groupsService = new GroupService(new GroupDal());
 
 groupsRoute.param('id', (req, res, next, id) => {
     if (!uuidValidate(id)) {
+        const error = 'not valid uuid';
+        logger.log({
+            level: 'error',
+            message: buildErrorMessage(req, error)
+        });
         res.status(404).json('not valid uuid');
     } else {
         next();
@@ -28,11 +34,15 @@ groupsRoute.get(
 groupsRoute.post(
     ENDPOINTS.GROUPS,
     validateGroupSchema,
-    async (req: Request<unknown, Group, GroupDTO>, res: Response) => {
+    async (req: Request<Record<string, string>, Group, GroupDTO>, res: Response) => {
         try {
             const newGroup = await groupsService.createGroup(req.body);
             res.json(newGroup);
         } catch (err) {
+            logger.log({
+                level: 'error',
+                message: buildErrorMessage(req, err)
+            });
             res.status(400).json(err);
         }
     }
@@ -42,13 +52,17 @@ groupsRoute
     .route(`${ENDPOINTS.GROUPS}/add-users`)
     .post(
         async (
-            req: Request<never, never, { groupId: string; userIds: string[] }>,
+            req: Request<Record<string, string>, unknown, { groupId: string; userIds: string[] }>,
             res
         ) => {
             try {
                 const result = await groupsService.addUsersToGroup(req.body.groupId, req.body.userIds);
                 res.json(result);
             } catch (err) {
+                logger.log({
+                    level: 'error',
+                    message: buildErrorMessage(req, err)
+                });
                 res.status(400).json((err as object).toString());
             }
         }
@@ -61,6 +75,10 @@ groupsRoute
             const group = await groupsService.getGroupById(req.params.id);
             res.json(group);
         } catch (err) {
+            logger.log({
+                level: 'error',
+                message: buildErrorMessage(req, err)
+            });
             res.status(404).json(err);
         }
     })
@@ -74,6 +92,10 @@ groupsRoute
                 );
                 res.json(updatedGroup);
             } catch (err) {
+                logger.log({
+                    level: 'error',
+                    message: buildErrorMessage(req, err)
+                });
                 res.status(400).json(err);
             }
         }
@@ -83,6 +105,10 @@ groupsRoute
             const result = await groupsService.deleteGroupById(req.params.id);
             res.json(result);
         } catch (err) {
+            logger.log({
+                level: 'error',
+                message: buildErrorMessage(req, err)
+            });
             res.status(400).json(err);
         }
     });

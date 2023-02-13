@@ -8,13 +8,16 @@ import {
 } from '../validationMiddleware';
 import { UserService } from '../services';
 import { UserDal } from '../data-access';
+import { buildErrorMessage, logger } from '../logger';
 
 const usersService = new UserService(new UserDal());
 const usersRoute = express.Router();
 
 usersRoute.param('id', (req, res, next, id) => {
     if (!uuidValidate(id)) {
-        res.status(404).json('not valid uuid');
+        const error = 'not valid uuid';
+        logger.log({ level: 'error', message: buildErrorMessage(req, error) });
+        res.status(404).json(error);
     } else {
         next();
     }
@@ -23,7 +26,10 @@ usersRoute.param('id', (req, res, next, id) => {
 usersRoute.get(
     ENDPOINTS.USERS,
     validateUsersSearchParams,
-    async (req: Request<object, object, object, FilterQueryParams>, res: Response) => {
+    async (
+        req: Request<object, object, object, FilterQueryParams>,
+        res: Response
+    ) => {
         const { loginSubstring, limit } = req.query;
         const result = await usersService.getAutoSuggestUsers(
             loginSubstring ?? '',
@@ -36,11 +42,18 @@ usersRoute.get(
 usersRoute.post(
     ENDPOINTS.USERS,
     validateUserSchema,
-    async (req: Request<unknown, User, UserDTO>, res: Response) => {
+    async (
+        req: Request<Record<string, string>, User, UserDTO>,
+        res: Response
+    ) => {
         try {
             const newUser = await usersService.createUser(req.body);
             res.json(newUser);
         } catch (err) {
+            logger.log({
+                level: 'error',
+                message: buildErrorMessage(req, err)
+            });
             res.status(400).json(err);
         }
     }
@@ -53,6 +66,10 @@ usersRoute
             const user = await usersService.getUserById(req.params.id);
             res.json(user);
         } catch (err) {
+            logger.log({
+                level: 'error',
+                message: buildErrorMessage(req, err)
+            });
             res.status(404).json(err);
         }
     })
@@ -66,6 +83,10 @@ usersRoute
                 );
                 res.json(updatedUser);
             } catch (err) {
+                logger.log({
+                    level: 'error',
+                    message: buildErrorMessage(req, err)
+                });
                 res.status(400).json(err);
             }
         }
@@ -75,6 +96,10 @@ usersRoute
             const deletedUser = await usersService.deleteUserById(req.params.id);
             res.json(deletedUser);
         } catch (err) {
+            logger.log({
+                level: 'error',
+                message: buildErrorMessage(req, err)
+            });
             res.status(400).json(err);
         }
     });
