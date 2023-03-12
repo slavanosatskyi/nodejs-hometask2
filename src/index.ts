@@ -2,9 +2,11 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import express, { Request, Response } from 'express';
+import cors from 'cors';
 import { buildErrorMessage, buildMessage, getErrorDescription, logger } from './logger';
 import { initModels } from './models';
-import { groupsRoute, usersRoute } from './routers';
+import { authenticateRoute, groupsRoute, usersRoute } from './routers';
+import './types/common';
 
 initModels();
 
@@ -20,6 +22,8 @@ app.use((req, res, next) => {
     next();
 });
 
+app.use(cors());
+app.use('/', authenticateRoute);
 app.use('/', usersRoute);
 app.use('/', groupsRoute);
 app.use((err: unknown, req: Request, res: Response) => {

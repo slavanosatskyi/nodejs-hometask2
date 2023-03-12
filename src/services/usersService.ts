@@ -14,7 +14,12 @@ export class UserService {
         return user.toJSON();
     }
 
-    public async createUser(userData: UserDTO) {
+    async findUserByLogin(login: string): Promise<User | null> {
+        const user = await this.userDal.getByLogin(login);
+        return user && user.toJSON();
+    }
+
+    async createUser(userData: UserDTO) {
         const isLoginUnique = await this.isLoginUnique(userData.login);
         if (!isLoginUnique) {
             throw notUniqueLoginMessage(userData.login);

@@ -21,6 +21,11 @@ export class UserDal {
         return user;
     }
 
+    async getByLogin(login: string) {
+        const user = await UserModel.findOne({ where: { login } });
+        return user;
+    }
+
     async getAll() {
         return UserModel.findAll();
     }

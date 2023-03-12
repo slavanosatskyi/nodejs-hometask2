@@ -9,9 +9,12 @@ import {
 import { UserService } from '../services';
 import { UserDal } from '../data-access';
 import { buildErrorMessage, logger } from '../logger';
+import { checkToken } from '../authMiddleware';
 
 const usersService = new UserService(new UserDal());
 const usersRoute = express.Router();
+
+usersRoute.use(checkToken);
 
 usersRoute.param('id', (req, res, next, id) => {
     if (!uuidValidate(id)) {

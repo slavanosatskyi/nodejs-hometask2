@@ -1,12 +1,3 @@
-declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
-  namespace NodeJS {
-    interface ProcessEnv {
-      DATABASE_URI: string;
-    }
-  }
-}
-
 export type UserId = string;
 
 export type User = {

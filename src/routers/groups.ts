@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import { validate as uuidValidate } from 'uuid';
+import { checkToken } from '../authMiddleware';
 import { GroupDal } from '../data-access';
 import { buildErrorMessage, logger } from '../logger';
 import { GroupService } from '../services';
@@ -9,6 +10,8 @@ import { ENDPOINTS } from './endpoints';
 
 const groupsRoute = express.Router();
 const groupsService = new GroupService(new GroupDal());
+
+groupsRoute.use(checkToken);
 
 groupsRoute.param('id', (req, res, next, id) => {
     if (!uuidValidate(id)) {
